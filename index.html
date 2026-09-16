@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#4F46E5">
+  <meta name="description" content="NEXUS — Private Arbitrage Trading Simulator. Simulate. Trade. Learn.">
+  <title>NEXUS — Arbitrage Trading Simulator</title>
+  <style>
+    :root {
+      --bg: #070a14;
+      --panel: #0d1120;
+      --panel-2: #11162a;
+      --border: rgba(148,163,184,.15);
+      --text: #f8fafc;
+      --muted: #8f9bb3;
+      --primary: #4f46e5;
+      --primary-2: #6366f1;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --shadow: 0 18px 45px rgba(0,0,0,.22);
+      --radius: 18px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    body { overflow-x: hidden; }
+    .hidden { display: none !important; }
+    .app { min-height: 100vh; }
+
+    /* Authentication */
+    .auth-shell {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 50% 12%, rgba(79,70,229,.24), transparent 34%),
+        radial-gradient(circle at 90% 90%, rgba(99,102,241,.10), transparent 28%),
+        var(--bg);
+    }
+    .auth-card {
+      width: min(460px, 100%);
+      background: rgba(13,17,32,.88);
+      border: 1px solid var(--border);
+      border-radius: 26px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+    .brand-lockup { text-align: center; margin-bottom: 28px; }
+    .brand-mark {
+      width: 58px; height: 58px; margin: 0 auto 13px; border-radius: 17px;
+      display: grid; place-items: center; font-size: 25px; font-weight: 900;
+      background: linear-gradient(145deg, #6366f1, #312e81);
+      box-shadow: 0 12px 35px rgba(79,70,229,.35);
+    }
+    .brand-name { font-size: 25px; font-weight: 850; letter-spacing: .04em; }
+    .brand-sub { color: var(--muted); margin-top: 4px; font-size: 13px; }
+    .sim-badge { display: inline-flex; align-items: center; gap: 6px; border: 1px solid rgba(34,197,94,.35); color: #bbf7d0; background: rgba(34,197,94,.08); border-radius: 999px; padding: 6px 10px; font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+    .auth-title { font-size: 26px; margin: 8px 0 6px; }
+    .auth-copy { color: var(--muted); line-height: 1.55; font-size: 14px; margin-bottom: 22px; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 12px; color: #b6c0d3; margin-bottom: 7px; }
+    .input { width: 100%; border: 1px solid var(--border); background: #090d1a; color: var(--text); border-radius: 13px; padding: 13px 14px; outline: none; }
+    .input:focus { border-color: rgba(99,102,241,.75); box-shadow: 0 0 0 3px rgba(99,102,241,.12); }
+    .primary, .secondary, .danger-btn { width: 100%; border: 0; border-radius: 13px; padding: 13px 16px; font-weight: 800; }
+    .primary { background: linear-gradient(135deg, var(--primary-2), var(--primary)); color: white; }
+    .secondary { background: #161c30; color: white; border: 1px solid var(--border); }
+    .danger-btn { background: rgba(239,68,68,.11); color: #fecaca; border: 1px solid rgba(239,68,68,.28); }
+    .text-btn { background: transparent; border: 0; color: #a5b4fc; padding: 5px; }
+    .auth-link { text-align: center; color: var(--muted); font-size: 13px; margin-top: 18px; }
+    .auth-link button { color: #a5b4fc; }
+    .checkline { display: flex; align-items: flex-start; gap: 9px; color: var(--muted); font-size: 12px; line-height: 1.45; margin: 8px 0 16px; }
+    .checkline input { margin-top: 2px; }
+
+    /* App shell */
+    .app-shell { min-height: 100vh; display: grid; grid-template-columns: 250px 1fr; }
+    .side-drawer { position: fixed; inset: 0 auto 0 0; width: 250px; z-index: 50; background: #0a0e1b; border-right: 1px solid var(--border); padding: 18px 14px; transform: translateX(0); transition: transform .22s ease; }
+    .drawer-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px 16px; }
+    .mini-brand { display: flex; align-items: center; gap: 10px; }
+    .mini-mark { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-weight: 900; background: #171c46; color: #a5b4fc; }
+    .mini-brand strong { font-size: 14px; }
+    .mini-brand span { display: block; font-size: 10px; color: var(--muted); }
+    .drawer-close { display: none; }
+    .drawer-section { margin-top: 16px; }
+    .drawer-label { font-size: 10px; color: #657089; text-transform: uppercase; letter-spacing: .12em; padding: 0 10px 7px; }
+    .drawer-item { width: 100%; border: 0; background: transparent; color: #b8c2d5; padding: 10px; border-radius: 11px; text-align: left; display: flex; align-items: center; gap: 10px; font-size: 13px; }
+    .drawer-item:hover { background: rgba(99,102,241,.08); color: white; }
+    .drawer-item .icon { width: 18px; text-align: center; }
+
+    .main-wrap { grid-column: 2; min-width: 0; }
+    .topbar { height: 70px; border-bottom: 1px solid var(--border); background: rgba(7,10,20,.82); backdrop-filter: blur(18px); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: sticky; top: 0; z-index: 30; }
+    .topbar-left { display: flex; align-items: center; gap: 13px; }
+    .hamburger { width: 38px; height: 38px; border: 1px solid var(--border); background: #0e1323; color: white; border-radius: 11px; display: none; place-items: center; }
+    .screen-title { font-size: 16px; font-weight: 800; }
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .top-icon { width: 38px; height: 38px; border-radius: 11px; border: 1px solid var(--border); background: #0e1323; color: #dbe4f2; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(145deg, #6366f1, #312e81); font-weight: 800; font-size: 12px; }
+    .content { max-width: 1240px; margin: 0 auto; padding: 24px; padding-bottom: calc(40px + var(--safe-bottom)); }
+
+    /* Shared UI */
+    .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+    .page-head h1 { margin: 0; font-size: 27px; letter-spacing: -.02em; }
+    .page-head p { color: var(--muted); margin: 5px 0 0; font-size: 13px; }
+    .grid { display: grid; gap: 16px; }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .card { background: linear-gradient(180deg, rgba(17,22,42,.98), rgba(12,16,31,.98)); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 12px 32px rgba(0,0,0,.14); }
+    .card-pad { padding: 18px; }
+    .eyebrow { color: #8793ab; text-transform: uppercase; letter-spacing: .10em; font-size: 10px; font-weight: 800; }
+    .muted { color: var(--muted); }
+    .balance { font-size: clamp(31px, 6vw, 48px); font-weight: 850; letter-spacing: -.04em; margin: 7px 0 14px; }
+    .stat-value { margin-top: 5px; font-size: 20px; font-weight: 800; }
+    .positive { color: #86efac; }
+    .warning { color: #fcd34d; }
+    .negative { color: #fca5a5; }
+    .action-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .quick-btn { border: 1px solid var(--border); background: #10162a; color: white; border-radius: 12px; padding: 11px 8px; font-size: 12px; font-weight: 750; }
+    .quick-btn:hover { border-color: rgba(99,102,241,.45); background: #131a31; }
+    .section-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .section-title h2 { margin: 0; font-size: 15px; }
+    .progress { height: 9px; border-radius: 999px; background: #1a2032; overflow: hidden; }
+    .progress > span { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, #4f46e5, #8b5cf6); border-radius: inherit; transition: width .25s linear; }
+    .status-line { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 12px; margin-top: 9px; }
+    .activity-list { display: grid; gap: 10px; }
+    .activity { display: flex; align-items: center; gap: 11px; padding: 11px 0; border-bottom: 1px solid rgba(148,163,184,.08); }
+    .activity:last-child { border-bottom: 0; }
+    .activity-icon { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: #151b31; }
+    .activity-main { min-width: 0; flex: 1; }
+    .activity-main strong { display: block; font-size: 12px; }
+    .activity-main span { color: var(--muted); font-size: 11px; }
+    .activity-value { font-size: 12px; font-weight: 800; }
+    .pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px; border-radius: 999px; border: 1px solid var(--border); font-size: 10px; font-weight: 800; }
+    .pill-live { color: #bbf7d0; border-color: rgba(34,197,94,.30); background: rgba(34,197,94,.07); }
+    .pill-neutral { color: #cbd5e1; background: rgba(148,163,184,.07); }
+    .divider { height: 1px; background: rgba(148,163,184,.09); margin: 16px 0; }
+    .btn { border: 0; border-radius: 11px; padding: 10px 13px; font-weight: 800; font-size: 12px; }
+    .btn-primary { background: #4f46e5; color: white; }
+    .btn-secondary { background: #171d31; color: #dbe4f2; border: 1px solid var(--border); }
+    .btn-danger { background: rgba(239,68,68,.11); color: #fecaca; border: 1px solid rgba(239,68,68,.25); }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 9px; }
+    .empty { padding: 30px 16px; text-align: center; color: var(--muted); font-size: 13px; }
+
+    /* Trade */
+    .plan-card { padding: 17px; position: relative; overflow: hidden; }
+    .plan-card.active { border-color: rgba(99,102,241,.62); box-shadow: 0 0 0 1px rgba(99,102,241,.16), 0 18px 34px rgba(0,0,0,.16); }
+    .plan-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .plan-name { font-weight: 820; }
+    .plan-roi { font-size: 27px; font-weight: 900; letter-spacing: -.035em; margin: 13px 0 2px; }
+    .plan-meta { color: var(--muted); font-size: 11px; }
+    .amount-preview { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+    .small-stat { background: #0a0f1e; border: 1px solid rgba(148,163,184,.09); border-radius: 12px; padding: 11px; }
+    .small-stat span { display: block; font-size: 10px; color: var(--muted); }
+    .small-stat strong { display: block; margin-top: 4px; font-size: 13px; }
+    .plan-select { width: 100%; margin-top: 12px; }
+    .trade-form { margin-top: 16px; }
+    .trade-preview { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-top: 10px; }
+
+    /* Community */
+    .community-toolbar { display: flex; align-items: center; gap: 10px; }
+    .post { padding: 17px; }
+    .post-head { display: flex; align-items: center; gap: 10px; }
+    .post-body { margin: 14px 0 12px; line-height: 1.55; font-size: 13px; color: #dbe4f2; }
+    .post-actions { display: flex; gap: 7px; }
+    .post-actions button { border: 1px solid var(--border); background: #10162a; color: #aeb9cb; border-radius: 10px; padding: 7px 10px; font-size: 11px; }
+    .post-actions button.active { color: #c7d2fe; border-color: rgba(99,102,241,.38); background: rgba(99,102,241,.10); }
+
+    /* Profile */
+    .profile-head { display: flex; align-items: center; gap: 14px; }
+    .profile-avatar { width: 58px; height: 58px; border-radius: 17px; display: grid; place-items: center; background: linear-gradient(145deg, #6366f1, #312e81); font-size: 18px; font-weight: 900; }
+    .profile-name { font-weight: 850; font-size: 17px; }
+    .profile-email { color: var(--muted); font-size: 11px; margin-top: 4px; }
+    .list { display: grid; }
+    .list-row { width: 100%; border: 0; border-bottom: 1px solid rgba(148,163,184,.08); background: transparent; color: white; display: flex; align-items: center; gap: 12px; text-align: left; padding: 14px 2px; }
+    .list-row:last-child { border-bottom: 0; }
+    .list-row .grow { flex: 1; }
+    .list-row strong { display: block; font-size: 12px; }
+    .list-row span { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; }
+
+    /* Modal + tour */
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.60); z-index: 80; display: grid; place-items: center; padding: 18px; }
+    .modal { width: min(520px, 100%); max-height: min(86vh, 760px); overflow: auto; background: #0c1120; border: 1px solid var(--border); border-radius: 22px; padding: 20px; box-shadow: var(--shadow); }
+    .modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .modal-head h3 { margin: 0; font-size: 20px; }
+    .modal-copy { color: var(--muted); line-height: 1.55; font-size: 12px; margin: 6px 0 16px; }
+    .close-btn { width: 34px; height: 34px; border-radius: 10px; background: #151a2d; color: #dbe4f2; border: 1px solid var(--border); }
+    .tour-card { width: min(410px, 100%); background: #0b1020; border: 1px solid rgba(99,102,241,.48); border-radius: 20px; padding: 20px; box-shadow: 0 24px 60px rgba(0,0,0,.4); }
+    .tour-step { color: #a5b4fc; font-size: 10px; text-transform: uppercase; letter-spacing: .12em; font-weight: 800; }
+    .tour-card h3 { margin: 8px 0 6px; font-size: 19px; }
+    .tour-card p { color: var(--muted); font-size: 12px; line-height: 1.55; margin: 0 0 17px; }
+    .tour-actions { display: flex; justify-content: space-between; gap: 10px; }
+
+    /* Mobile nav */
+    .bottom-nav { display: none; }
+    .drawer-scrim { display: none; }
+    .toast-wrap { position: fixed; left: 50%; bottom: calc(20px + var(--safe-bottom)); transform: translateX(-50%); z-index: 120; width: min(420px, calc(100% - 24px)); display: grid; gap: 8px; pointer-events: none; }
+    .toast { pointer-events: auto; background: #11172b; border: 1px solid var(--border); color: white; border-radius: 12px; padding: 12px 14px; box-shadow: var(--shadow); font-size: 12px; }
+
+    @media (max-width: 960px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .side-drawer { transform: translateX(-102%); }
+      .side-drawer.open { transform: translateX(0); }
+      .main-wrap { grid-column: 1; }
+      .hamburger { display: grid; }
+      .drawer-close { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid var(--border); background: #12172b; color: white; border-radius: 9px; }
+      .drawer-scrim { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.56); z-index: 40; }
+      .bottom-nav { display: grid; position: fixed; left: 0; right: 0; bottom: 0; z-index: 35; grid-template-columns: repeat(4,1fr); background: rgba(8,12,23,.94); backdrop-filter: blur(18px); border-top: 1px solid var(--border); padding: 8px 8px calc(8px + var(--safe-bottom)); }
+      .bottom-nav button { border: 0; background: transparent; color: #77829a; padding: 7px 4px; display: grid; justify-items: center; gap: 4px; font-size: 10px; }
+      .bottom-nav button.active { color: white; }
+      .bottom-nav .nav-icon { width: 32px; height: 29px; display: grid; place-items: center; border-radius: 10px; font-size: 16px; }
+      .bottom-nav button.active .nav-icon { background: rgba(99,102,241,.15); color: #c7d2fe; }
+      .content { padding-bottom: calc(92px + var(--safe-bottom)); }
+    }
+    @media (max-width: 700px) {
+      .topbar { padding: 0 15px; }
+      .content { padding: 17px; }
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .page-head { align-items: flex-start; flex-direction: column; }
+      .trade-preview, .amount-preview { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div id="authScreen" class="auth-shell">
+    <section class="auth-card">
+      <div class="brand-lockup">
+        <div class="brand-mark">N</div>
+        <div class="brand-name">NEXUS</div>
+        <div class="brand-sub">Arbitrage Trading Simulator</div>
+        <div style="margin-top:12px"><span class="sim-badge">● Simulation Mode</span></div>
+      </div>
+
+      <div id="signinView">
+        <h1 class="auth-title">Welcome back</h1>
+        <p class="auth-copy">Sign in to continue your private simulated trading journey.</p>
+        <form id="signinForm">
+          <div class="field"><label for="signinEmail">Email</label><input id="signinEmail" class="input" type="email" autocomplete="email" required placeholder="you@example.com"></div>
+          <div class="field"><label for="signinPassword">Password</label><input id="signinPassword" class="input" type="password" autocomplete="current-password" required placeholder="••••••••"></div>
+          <div style="text-align:right;margin:-3px 0 13px"><button type="button" class="text-btn" id="forgotBtn">Forgot password?</button></div>
+          <button class="primary" type="submit">Sign In</button>
+        </form>
+        <div class="auth-link">New to NEXUS? <button class="text-btn" id="showSignupBtn" type="button">Create account</button></div>
+      </div>
+
+      <div id="signupView" class="hidden">
+        <h1 class="auth-title">Create your account</h1>
+        <p class="auth-copy">Join the private NEXUS simulation ecosystem with an invitation code.</p>
+        <form id="signupForm">
+          <div class="field"><label for="signupName">Full name</label><input id="signupName" class="input" required placeholder="Your full name"></div>
+          <div class="field"><label for="signupEmail">Email</label><input id="signupEmail" class="input" type="email" autocomplete="email" required placeholder="you@example.com"></div>
+          <div class="field"><label for="signupPassword">Password</label><input id="signupPassword" class="input" type="password" minlength="8" required placeholder="At least 8 characters"></div>
+          <div class="field"><label for="signupConfirm">Confirm password</label><input id="signupConfirm" class="input" type="password" minlength="8" required placeholder="Repeat password"></div>
+          <div class="field"><label for="inviteCode">Invitation code</label><input id="inviteCode" class="input" required placeholder="e.g. NEXUS-7F3K" autocomplete="off"></div>
+          <label class="checkline"><input id="termsCheck" type="checkbox" required><span>I understand that NEXUS is a simulation and the balances, trades, returns, deposits and withdrawals shown in the simulator are fictional.</span></label>
+          <button class="primary" type="submit">Create Account</button>
+        </form>
+        <div class="auth-link">Already have an account? <button class="text-btn" id="showSigninBtn" type="button">Sign in</button></div>
+      </div>
+    </section>
+  </div>
+
+  <div id="appScreen" class="app hidden">
+    <div class="app-shell">
+      <aside id="sideDrawer" class="side-drawer">
+        <div class="drawer-top">
+          <div class="mini-brand"><div class="mini-mark">N</div><div><strong>NEXUS</strong><span>Arbitrage Simulator</span></div></div>
+          <button id="drawerClose" class="drawer-close" type="button" aria-label="Close menu">×</button>
+        </div>
+        <div class="drawer-section"><div class="drawer-label">Account</div>
+          <button class="drawer-item" data-route="profile"><span class="icon">◉</span>Profile</button>
+          <button class="drawer-item" data-modal="verification"><span class="icon">✓</span>Verification</button>
+          <button class="drawer-item" data-modal="security"><span class="icon">⌘</span>Security</button>
+        </div>
+        <div class="drawer-section"><div class="drawer-label">Trading</div>
+          <button class="drawer-item" data-modal="tradeHistory"><span class="icon">↗</span>Trade History</button>
+          <button class="drawer-item" data-modal="transactionHistory"><span class="icon">≋</span>Transaction History</button>
+        </div>
+        <div class="drawer-section"><div class="drawer-label">Community</div>
+          <button class="drawer-item" data-route="community"><span class="icon">◎</span>Community</button>
+          <button class="drawer-item" data-modal="announcements"><span class="icon">!</span>Announcements</button>
+        </div>
+        <div class="drawer-section"><div class="drawer-label">Support</div>
+          <button class="drawer-item" data-modal="support"><span class="icon">?</span>Help Center</button>
+          <button class="drawer-item" data-modal="about"><span class="icon">i</span>About NEXUS</button>
+        </div>
+        <div class="drawer-section"><div class="drawer-label">System</div>
+          <button class="drawer-item" data-modal="settings"><span class="icon">⚙</span>Settings</button>
+          <button class="drawer-item" id="drawerLogout" type="button"><span class="icon">↪</span>Log out</button>
+        </div>
+        <div style="margin-top:20px"><span class="sim-badge">● Simulation Mode</span></div>
+      </aside>
+      <div id="drawerScrim" class="drawer-scrim hidden"></div>
+
+      <main class="main-wrap">
+        <header class="topbar">
+          <div class="topbar-left"><button id="hamburger" class="hamburger" aria-label="Open menu" type="button">☰</button><div id="screenTitle" class="screen-title">Home</div></div>
+          <div class="topbar-right"><span class="sim-badge">● Simulation</span><button id="notificationsBtn" class="top-icon" type="button" aria-label="Notifications">♢</button><div id="topAvatar" class="avatar">TA</div></div>
+        </header>
+
+        <div id="content" class="content"></div>
+
+        <nav id="bottomNav" class="bottom-nav" aria-label="Primary navigation">
+          <button data-route="home" class="active"><span class="nav-icon">⌂</span><span>Home</span></button>
+          <button data-route="trade"><span class="nav-icon">↗</span><span>Trade</span></button>
+          <button data-route="community"><span class="nav-icon">◎</span><span>Community</span></button>
+          <button data-route="profile"><span class="nav-icon">◉</span><span>Profile</span></button>
+        </nav>
+      </main>
+    </div>
+  </div>
+
+  <div id="modalOverlay" class="overlay hidden" role="dialog" aria-modal="true">
+    <div id="modalBody" class="modal"></div>
+  </div>
+  <div id="tourOverlay" class="overlay hidden" role="dialog" aria-modal="true">
+    <div class="tour-card">
+      <div id="tourStep" class="tour-step">Tour 1 of 5</div>
+      <h3 id="tourTitle">Welcome to Home</h3>
+      <p id="tourText">Your dashboard keeps your simulated balance, active cycle, and activity in one place.</p>
+      <div class="tour-actions"><button id="tourSkip" class="btn btn-secondary" type="button">Skip Tour</button><button id="tourNext" class="btn btn-primary" type="button">Next</button></div>
+    </div>
+  </div>
+  <div id="toastWrap" class="toast-wrap"></div>
+
+  <script>
+    'use strict';
+
+    const PLANS = {
+      daily: { name: 'Daily', roi: 25, durationMs: 24 * 60 * 60 * 1000, label: '24 hours' },
+      weekly: { name: 'Weekly', roi: 100, durationMs: 7 * 24 * 60 * 60 * 1000, label: '7 days' },
+      monthly: { name: 'Monthly', roi: 300, durationMs: 30 * 24 * 60 * 60 * 1000, label: '30 days' },
+      yearly: { name: 'Yearly', roi: 500, durationMs: 365 * 24 * 60 * 60 * 1000, label: '365 days' }
+    };
+
+    const VALID_INVITES = new Set(['NEXUS-7F3K', 'NEXUS-2026', 'DEMO-ACCESS']);
+
+    const defaultState = {
+      loggedIn: false,
+      user: { name: 'Trader Account', email: 'demo@nexus.local', verified: false, inviteCode: '' },
+      balance: 0,
+      selectedPlan: 'daily',
+      activeTrade: null,
+      tradeHistory: [],
+      transactions: [],
+      communityPosts: [
+        { id: 1, author: 'NEXUS Official', badge: 'Official', text: 'Welcome to the private NEXUS simulation community. Share strategy ideas, simulator observations, and questions.', likes: 28, comments: 6, liked: false, time: '2h ago' },
+        { id: 2, author: 'CryptoLearner', badge: 'Member', text: 'Just completed my first Daily simulation cycle. The trade activity timeline makes it much easier to understand arbitrage execution.', likes: 12, comments: 3, liked: false, time: '5h ago' }
+      ],
+      notifications: 2,
+      tourSeen: false,
+      tourStep: 0,
+      settings: { notifications: true, dark: true }
+    };
+
+    let state = loadState();
+    let currentRoute = 'home';
+    let tradeTimer = null;
+    let selectedModal = null;
+
+    function clone(value) { return JSON.parse(JSON.stringify(value)); }
+    function loadState() {
+      try {
+        const saved = localStorage.getItem('nexusSimulatorState');
+        if (!saved) return clone(defaultState);
+        const parsed = JSON.parse(saved);
+        return Object.assign(clone(defaultState), parsed);
+      } catch (error) {
+        return clone(defaultState);
+      }
+    }
+    function saveState() {
+      try { localStorage.setItem('nexusSimulatorState', JSON.stringify(state)); } catch (error) { /* storage may be unavailable */ }
+    }
+    function resetSessionData() {
+      const preserved = { user: state.user, settings: state.settings };
+      state = clone(defaultState);
+      state.user = preserved.user;
+      state.settings = preserved.settings;
+      saveState();
+    }
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
+    }
+    function money(value) {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(Number(value) || 0);
+    }
+    function initials(name) {
+      return String(name || 'Trader Account').split(/\s+/).filter(Boolean).slice(0,2).map(part => part[0]).join('').toUpperCase() || 'TA';
+    }
+    function formatRemaining(ms) {
+      const total = Math.max(0, Math.floor(ms / 1000));
+      const days = Math.floor(total / 86400); const hours = Math.floor((total % 86400) / 3600); const mins = Math.floor((total % 3600) / 60); const secs = total % 60;
+      return `${days ? days + 'd ' : ''}${String(hours).padStart(2,'0')}h ${String(mins).padStart(2,'0')}m ${String(secs).padStart(2,'0')}s`;
+    }
+    function percentProgress(trade) {
+      if (!trade) return 0;
+      const duration = trade.endTime - trade.startTime;
+      return Math.max(0, Math.min(100, ((Date.now() - trade.startTime) / duration) * 100));
+    }
+    function statusText(trade) {
+      if (!trade) return 'Idle';
+      const p = percentProgress(trade);
+      if (p < 12) return 'Scanning';
+      if (p < 30) return 'Opportunity Found';
+      if (p < 62) return 'Executing';
+      if (p < 90) return 'Monitoring';
+      if (p < 100) return 'Finalizing';
+      return 'Completed';
+    }
+    function simulatedProfit(trade) {
+      return trade ? trade.amount * (trade.roi / 100) : 0;
+    }
+    function activeTargetBalance(trade) {
+      return trade ? trade.amount + simulatedProfit(trade) : 0;
+    }
+    function cycleValue(trade) {
+      if (!trade) return 0;
+      const p = percentProgress(trade) / 100;
+      return trade.amount + simulatedProfit(trade) * Math.min(1, p);
+    }
+    function showToast(message) {
+      const wrap = document.getElementById('toastWrap');
+      const node = document.createElement('div');
+      node.className = 'toast'; node.textContent = message;
+      wrap.appendChild(node);
+      setTimeout(() => node.remove(), 3200);
+    }
+
+    function render() {
+      document.getElementById('authScreen').classList.toggle('hidden', state.loggedIn);
+      document.getElementById('appScreen').classList.toggle('hidden', !state.loggedIn);
+      if (!state.loggedIn) { stopTradeTimer(); return; }
+      document.getElementById('screenTitle').textContent = ({ home:'Home', trade:'Trade', community:'Community', profile:'Profile' })[currentRoute] || 'Home';
+      document.getElementById('topAvatar').textContent = initials(state.user.name);
+      document.querySelectorAll('#bottomNav button[data-route]').forEach(btn => btn.classList.toggle('active', btn.dataset.route === currentRoute));
+      const views = { home: renderHome, trade: renderTrade, community: renderCommunity, profile: renderProfile };
+      document.getElementById('content').innerHTML = views[currentRoute]();
+      attachRouteEvents();
+      if (currentRoute === 'home' || currentRoute === 'trade') startTradeTimer(); else stopTradeTimer();
+    }
+
+    function renderHome() {
+      const trade = state.activeTrade;
+      const target = activeTargetBalance(trade);
+      const shownBalance = trade ? cycleValue(trade) : state.balance;
+      const progress = trade ? percentProgress(trade) : 0;
+      const recent = state.transactions.slice(0,5);
+      return `
+        <div class="page-head"><div><h1>Good morning, ${escapeHtml(state.user.name.split(' ')[0] || 'Trader')}</h1><p>Track your simulated portfolio, cycles and activity.</p></div><span class="pill pill-live">Simulation environment</span></div>
+        <div class="grid grid-2">
+          <section class="card card-pad">
+            <div class="eyebrow">Simulated total balance</div>
+            <div class="balance">${money(shownBalance)}</div>
+            <div class="grid grid-2">
+              <div><div class="eyebrow">Available</div><div class="stat-value">${money(state.balance)}</div></div>
+              <div><div class="eyebrow">Active trade</div><div class="stat-value">${trade ? money(trade.amount) : '$0.00'}</div></div>
+            </div>
+            <div class="divider"></div>
+            <div class="section-title"><h2>Quick Actions</h2></div>
+            <div class="action-row"><button class="quick-btn" data-action="deposit">↓ Deposit</button><button class="quick-btn" data-action="withdraw">↑ Withdraw</button><button class="quick-btn" data-route-action="trade">↗ Trade</button></div>
+          </section>
+          <section class="card card-pad">
+            <div class="section-title"><h2>Active Trade</h2><span class="pill ${trade ? 'pill-live' : 'pill-neutral'}">${trade ? statusText(trade) : 'No active cycle'}</span></div>
+            ${trade ? `<div class="grid grid-2"><div><div class="eyebrow">${escapeHtml(trade.planName)} plan</div><div class="stat-value">${trade.roi}% target ROI</div></div><div><div class="eyebrow">Target result</div><div class="stat-value positive">${money(target)}</div></div></div><div style="margin-top:17px"><div class="progress"><span style="width:${progress.toFixed(1)}%"></span></div><div class="status-line"><span>${progress.toFixed(0)}% complete</span><strong>${formatRemaining(trade.endTime - Date.now())}</strong></div></div><div class="btn-row" style="margin-top:15px"><button class="btn btn-secondary" data-route-action="trade">View Details</button></div>` : `<div class="empty">Choose a simulation plan from Trade to begin a cycle.</div>`}
+          </section>
+        </div>
+        <div class="grid grid-2" style="margin-top:16px">
+          <section class="card card-pad"><div class="section-title"><h2>Trading Activity</h2><span class="muted" style="font-size:11px">Simulated</span></div>${trade ? renderActivityPreview(trade) : '<div class="empty">No active simulated arbitrage activity yet.</div>'}</section>
+          <section class="card card-pad"><div class="section-title"><h2>Recent Activity</h2><button class="text-btn" data-modal="transactionHistory" type="button">View all</button></div>${recent.length ? `<div class="activity-list">${recent.map(renderTransaction).join('')}</div>` : '<div class="empty">Your simulated transactions will appear here.</div>'}</section>
+        </div>`;
+    }
+
+    function renderActivityPreview(trade) {
+      const p = percentProgress(trade);
+      const steps = [
+        ['◌','Market Scan', p >= 0], ['✦','Opportunity Found', p >= 12], ['↘','Buy on Exchange A', p >= 30], ['↗','Sell on Exchange B', p >= 46], ['≈','Fees Calculated', p >= 62], ['✓','Net Result', p >= 90]
+      ];
+      return `<div class="activity-list">${steps.map(([icon, label, active], index) => `<div class="activity"><div class="activity-icon">${active ? icon : '·'}</div><div class="activity-main"><strong>${label}</strong><span>${active ? (index < 2 ? 'Monitoring simulated market conditions' : 'Simulation event recorded') : 'Queued'}</span></div><div class="activity-value ${active && index === 5 ? 'positive' : ''}">${active ? 'Done' : '—'}</div></div>`).join('')}</div>`;
+    }
+
+    function renderTrade() {
+      const trade = state.activeTrade;
+      return `
+        <div class="page-head"><div><h1>Trade</h1><p>Select a simulation plan and monitor the arbitrage cycle.</p></div></div>
+        <section class="grid grid-2">
+          ${Object.entries(PLANS).map(([key, plan]) => `<article class="card plan-card ${state.selectedPlan === key ? 'active' : ''}"><div class="plan-top"><div class="plan-name">${plan.name}</div><span class="pill">${plan.label}</span></div><div class="plan-roi">${plan.roi}%</div><div class="plan-meta">Target ROI • Simulation only</div><div class="amount-preview"><div class="small-stat"><span>Example $2,000</span><strong>${money(2000 * (plan.roi/100))} profit</strong></div><div class="small-stat"><span>Projected total</span><strong>${money(2000 * (1 + plan.roi/100))}</strong></div></div><button class="btn ${state.selectedPlan === key ? 'btn-primary' : 'btn-secondary'} plan-select" data-select-plan="${key}" ${trade ? 'disabled' : ''}>${trade ? (trade.planKey === key ? 'Active' : 'Unavailable') : (state.selectedPlan === key ? 'Selected' : 'Select Plan')}</button></article>`).join('')}
+        </section>
+        <section class="card card-pad trade-form"><div class="section-title"><h2>${trade ? 'Active simulation cycle' : 'Start a simulation'}</h2><span class="pill ${trade ? 'pill-live' : 'pill-neutral'}">${trade ? 'Running' : 'Ready'}</span></div>
+          ${trade ? renderActiveTrade() : `<div class="field"><label for="tradeAmount">Simulation amount</label><input id="tradeAmount" class="input" type="number" min="100" step="50" value="2000" placeholder="2000"></div><div class="trade-preview"><div class="small-stat"><span>Selected plan</span><strong>${PLANS[state.selectedPlan].name}</strong></div><div class="small-stat"><span>Target ROI</span><strong>${PLANS[state.selectedPlan].roi}%</strong></div><div class="small-stat"><span>Target profit</span><strong class="positive" id="targetProfit">${money(2000 * PLANS[state.selectedPlan].roi / 100)}</strong></div></div><div class="divider"></div><button id="startSimulationBtn" class="primary" type="button">Start Simulation</button><p class="muted" style="font-size:11px;line-height:1.5;margin:10px 0 0">All trading activity on this page is simulated. No real funds or live exchange orders are used.</p>`}
+        </section>
+        <section class="card card-pad" style="margin-top:16px"><div class="section-title"><h2>Simulation Engine</h2><span class="pill pill-neutral">Arbitrage model</span></div><div class="grid grid-3"><div class="small-stat"><span>Market scan</span><strong>BTC • ETH • SOL</strong></div><div class="small-stat"><span>Quote assets</span><strong>USDT • USDC</strong></div><div class="small-stat"><span>Execution model</span><strong>Cross-venue spread</strong></div></div></section>`;
+    }
+
+    function renderActiveTrade() {
+      const t = state.activeTrade; const progress = percentProgress(t); const target = activeTargetBalance(t); const status = statusText(t);
+      return `<div class="grid grid-3"><div class="small-stat"><span>Plan</span><strong>${escapeHtml(t.planName)}</strong></div><div class="small-stat"><span>Investment</span><strong>${money(t.amount)}</strong></div><div class="small-stat"><span>Target result</span><strong class="positive">${money(target)}</strong></div></div><div style="margin-top:18px"><div class="progress"><span style="width:${progress.toFixed(1)}%"></span></div><div class="status-line"><span>${status} • ${progress.toFixed(0)}%</span><strong>${formatRemaining(t.endTime - Date.now())}</strong></div></div><div class="divider"></div>${renderActivityPreview(t)}<div class="btn-row" style="margin-top:15px"><button class="btn btn-secondary" data-modal="tradeHistory" type="button">View Trade History</button></div>`;
+    }
+
+    function renderCommunity() {
+      return `<div class="page-head"><div><h1>Community</h1><p>Your private simulated trading community.</p></div><button class="btn btn-primary" id="createPostBtn" type="button">＋ Create Post</button></div><div class="grid" style="gap:12px">${state.communityPosts.map(post => `<article class="card post"><div class="post-head"><div class="avatar">${initials(post.author)}</div><div style="min-width:0;flex:1"><strong style="font-size:12px">${escapeHtml(post.author)}</strong><div class="muted" style="font-size:10px;margin-top:3px">${escapeHtml(post.badge)} • ${escapeHtml(post.time)}</div></div></div><div class="post-body">${escapeHtml(post.text)}</div><div class="post-actions"><button data-like-post="${post.id}" class="${post.liked ? 'active' : ''}">♡ ${post.likes}</button><button data-comment-post="${post.id}">◌ ${post.comments} comments</button></div></article>`).join('')}</div>`;
+    }
+
+    function renderProfile() {
+      return `<div class="page-head"><div><h1>Profile</h1><p>Manage your NEXUS simulation account.</p></div></div><div class="grid grid-2"><section class="card card-pad"><div class="profile-head"><div class="profile-avatar">${initials(state.user.name)}</div><div><div class="profile-name">${escapeHtml(state.user.name)}</div><div class="profile-email">${escapeHtml(state.user.email)}</div><div style="margin-top:8px"><span class="pill ${state.user.verified ? 'pill-live' : 'pill-neutral'}">${state.user.verified ? '✓ Verified profile' : 'Verification pending'}</span></div></div></div><div class="divider"></div><div class="grid grid-2"><div><div class="eyebrow">Simulation balance</div><div class="stat-value">${money(state.balance)}</div></div><div><div class="eyebrow">Completed cycles</div><div class="stat-value">${state.tradeHistory.length}</div></div></div></section><section class="card card-pad"><div class="section-title"><h2>Account</h2></div><div class="list"><button class="list-row" data-modal="verification"><span>✓</span><div class="grow"><strong>KYC-style profile verification</strong><span>${state.user.verified ? 'Completed' : 'Complete profile verification'}</span></div><span>›</span></button><button class="list-row" data-modal="referral"><span>◇</span><div class="grow"><strong>Referral & Invitation</strong><span>${state.user.inviteCode || 'Invitation linked'}</span></div><span>›</span></button><button class="list-row" data-modal="security"><span>⌘</span><div class="grow"><strong>Security</strong><span>Password and account controls</span></div><span>›</span></button><button class="list-row" data-modal="settings"><span>⚙</span><div class="grow"><strong>Settings</strong><span>Notifications, theme, preferences</span></div><span>›</span></button></div></section></div><section class="card card-pad" style="margin-top:16px"><div class="section-title"><h2>History</h2></div><div class="list"><button class="list-row" data-modal="transactionHistory"><span>≋</span><div class="grow"><strong>Transaction History</strong><span>Simulated deposits, withdrawals and results</span></div><span>›</span></button><button class="list-row" data-modal="tradeHistory"><span>↗</span><div class="grow"><strong>Trade History</strong><span>Completed and active simulation cycles</span></div><span>›</span></button></div></section>`;
+    }
+
+    function renderTransaction(tx) {
+      return `<div class="activity"><div class="activity-icon">${tx.type === 'deposit' ? '↓' : tx.type === 'withdraw' ? '↑' : '↗'}</div><div class="activity-main"><strong>${escapeHtml(tx.label)}</strong><span>${escapeHtml(tx.time)}</span></div><div class="activity-value ${tx.amount >= 0 ? 'positive' : 'negative'}">${tx.amount >= 0 ? '+' : ''}${money(tx.amount)}</div></div>`;
+    }
+
+    function attachRouteEvents() {
+      document.querySelectorAll('[data-route-action]').forEach(btn => btn.addEventListener('click', () => navigate(btn.dataset.routeAction)));
+      document.querySelectorAll('[data-select-plan]').forEach(btn => btn.addEventListener('click', () => { state.selectedPlan = btn.dataset.selectPlan; saveState(); render(); }));
+      const amount = document.getElementById('tradeAmount');
+      if (amount) amount.addEventListener('input', () => {
+        const value = Math.max(0, Number(amount.value) || 0);
+        const target = document.getElementById('targetProfit');
+        if (target) target.textContent = money(value * PLANS[state.selectedPlan].roi / 100);
+      });
+      const start = document.getElementById('startSimulationBtn');
+      if (start) start.addEventListener('click', () => startSimulation());
+      document.querySelectorAll('[data-action="deposit"]').forEach(btn => btn.addEventListener('click', () => openModal('deposit')));
+      document.querySelectorAll('[data-action="withdraw"]').forEach(btn => btn.addEventListener('click', () => openModal('withdraw')));
+      document.querySelectorAll('[data-modal]').forEach(btn => btn.addEventListener('click', () => openModal(btn.dataset.modal)));
+      document.querySelectorAll('[data-like-post]').forEach(btn => btn.addEventListener('click', () => toggleLike(Number(btn.dataset.likePost))));
+      document.querySelectorAll('[data-comment-post]').forEach(btn => btn.addEventListener('click', () => showToast('Comments are simulated in this prototype.')));
+      const createPost = document.getElementById('createPostBtn');
+      if (createPost) createPost.addEventListener('click', () => openModal('createPost'));
+    }
+
+    function navigate(route) {
+      if (!['home','trade','community','profile'].includes(route)) return;
+      currentRoute = route;
+      closeDrawer();
+      render();
+    }
+
+    function startSimulation() {
+      if (state.activeTrade) { showToast('A simulation cycle is already running.'); return; }
+      const input = document.getElementById('tradeAmount');
+      const amount = Number(input?.value || 0);
+      if (!Number.isFinite(amount) || amount < 100) { showToast('Enter a simulation amount of at least $100.'); return; }
+      const plan = PLANS[state.selectedPlan];
+      state.activeTrade = { id: 'SIM-' + Date.now().toString(36).toUpperCase(), planKey: state.selectedPlan, planName: plan.name, roi: plan.roi, amount, startTime: Date.now(), endTime: Date.now() + plan.durationMs };
+      state.balance = Math.max(0, state.balance - amount);
+      state.transactions.unshift({ id: Date.now(), type:'trade', label: `${plan.name} simulation started`, amount: -amount, time: 'Just now' });
+      saveState(); render(); showToast(`${plan.name} simulation started.`);
+    }
+
+    function finalizeTrade() {
+      const trade = state.activeTrade;
+      if (!trade) return;
+      const total = activeTargetBalance(trade);
+      state.balance += total;
+      state.tradeHistory.unshift({ ...trade, completedTime: Date.now(), result: total });
+      state.transactions.unshift({ id: Date.now(), type:'profit', label: `${trade.planName} simulation completed`, amount: total, time: 'Just now' });
+      state.activeTrade = null;
+      saveState(); render(); showToast('Simulation cycle completed and the simulated balance was updated.');
+    }
+
+    function startTradeTimer() {
+      stopTradeTimer();
+      tradeTimer = setInterval(() => {
+        if (!state.activeTrade) { stopTradeTimer(); return; }
+        if (Date.now() >= state.activeTrade.endTime) { finalizeTrade(); return; }
+        if (currentRoute === 'home' || currentRoute === 'trade') render();
+      }, 1000);
+    }
+    function stopTradeTimer() { if (tradeTimer) { clearInterval(tradeTimer); tradeTimer = null; } }
+
+    function toggleLike(id) {
+      const post = state.communityPosts.find(p => p.id === id); if (!post) return;
+      post.liked = !post.liked; post.likes += post.liked ? 1 : -1; saveState(); render();
+    }
+
+    function openModal(type) {
+      selectedModal = type;
+      const body = document.getElementById('modalBody');
+      const close = '<button id="modalClose" class="close-btn" type="button" aria-label="Close">×</button>';
+      const modalMap = {
+        deposit: { title:'Simulated Deposit', html:`<p class="modal-copy">Add fictional funds to your simulator balance. No blockchain transaction is created.</p><div class="field"><label for="depositAmount">Amount (USD)</label><input id="depositAmount" class="input" type="number" min="10" step="10" value="2000"></div><div class="field"><label for="depositAsset">Simulated asset</label><select id="depositAsset" class="input"><option>USDT</option><option>USDC</option><option>BTC</option><option>ETH</option><option>SOL</option></select></div><button id="confirmDeposit" class="primary" type="button">Add Simulated Funds</button>` },
+        withdraw: { title:'Simulated Withdrawal', html:`<p class="modal-copy">This only decreases your fictional simulator balance. No funds are sent to a wallet.</p><div class="field"><label for="withdrawAmount">Amount (USD)</label><input id="withdrawAmount" class="input" type="number" min="10" step="10" value="200"></div><button id="confirmWithdraw" class="primary" type="button">Simulate Withdrawal</button>` },
+        verification: { title:'Profile Verification', html:`<p class="modal-copy">This is a KYC-style profile step for the simulator. It does not collect or transmit real identity documents.</p><div class="grid grid-2"><div class="small-stat"><span>Personal information</span><strong>Ready</strong></div><div class="small-stat"><span>Profile status</span><strong>${state.user.verified ? 'Verified' : 'Pending'}</strong></div></div><div class="divider"></div><button id="verifyProfile" class="primary" type="button">${state.user.verified ? 'Verification Completed' : 'Complete Profile Verification'}</button>` },
+        security: { title:'Security', html:`<p class="modal-copy">Prototype security settings. In production, use a real authentication provider and secure password recovery flow.</p><div class="list"><div class="list-row"><span>⌘</span><div class="grow"><strong>Password</strong><span>••••••••</span></div><span>›</span></div><div class="list-row"><span>●</span><div class="grow"><strong>Session</strong><span>Local simulator session</span></div><span class="positive">Active</span></div></div>` },
+        settings: { title:'Settings', html:`<div class="list"><div class="list-row"><span>●</span><div class="grow"><strong>Notifications</strong><span>Simulation alerts and announcements</span></div><input id="settingsNotifications" type="checkbox" ${state.settings.notifications ? 'checked' : ''}></div><div class="list-row"><span>◎</span><div class="grow"><strong>Show guided tour again</strong><span>Launch the helper tour on next visit</span></div><button id="resetTour" class="btn btn-secondary" type="button">Reset</button></div><div class="list-row"><span>i</span><div class="grow"><strong>Simulation mode</strong><span>Always enabled</span></div><span class="pill pill-live">ON</span></div></div>` },
+        referral: { title:'Referral & Invitation', html:`<p class="modal-copy">Your private access code is linked to this simulated account.</p><div class="small-stat"><span>Invitation code</span><strong>${escapeHtml(state.user.inviteCode || 'DEMO-ACCESS')}</strong></div><div class="divider"></div><button id="copyInvite" class="primary" type="button">Copy Code</button>` },
+        tradeHistory: { title:'Trade History', html: state.tradeHistory.length ? `<div class="activity-list">${state.tradeHistory.map(t => `<div class="activity"><div class="activity-icon">✓</div><div class="activity-main"><strong>${escapeHtml(t.planName)} simulation</strong><span>${new Date(t.completedTime || t.startTime).toLocaleString()}</span></div><div class="activity-value positive">${money(t.result || activeTargetBalance(t))}</div></div>`).join('')}</div>` : '<div class="empty">No completed simulated cycles yet.</div>' },
+        transactionHistory: { title:'Transaction History', html: state.transactions.length ? `<div class="activity-list">${state.transactions.map(renderTransaction).join('')}</div>` : '<div class="empty">No simulated transactions yet.</div>' },
+        announcements: { title:'Announcements', html:`<div class="small-stat"><span>NEXUS Official</span><strong>Simulation-first product preview</strong><p class="muted" style="font-size:11px;line-height:1.5;margin:6px 0 0">This prototype is designed to demonstrate an educational simulated trading ecosystem. It does not execute live trades or handle real deposits.</p></div>` },
+        support: { title:'Help Center', html:`<div class="list"><div class="list-row"><span>?</span><div class="grow"><strong>How does the simulator work?</strong><span>Choose a plan and start a fictional trading cycle.</span></div></div><div class="list-row"><span>↗</span><div class="grow"><strong>How are returns calculated?</strong><span>Simulation ROI is applied to the selected fictional amount.</span></div></div><div class="list-row"><span>✉</span><div class="grow"><strong>Contact support</strong><span>support@nexus.local</span></div></div></div>` },
+        about: { title:'About NEXUS', html:`<p class="modal-copy">NEXUS is a private arbitrage trading simulator built to demonstrate trading workflows, portfolio UX, community features, and onboarding patterns.</p><span class="sim-badge">● 100% Simulation</span>` },
+        createPost: { title:'Create Post', html:`<div class="field"><label for="postText">Post</label><textarea id="postText" class="input" rows="5" placeholder="Share a simulation observation..."></textarea></div><button id="publishPost" class="primary" type="button">Publish</button>` },
+        notifications: { title:'Notifications', html:`<div class="activity-list"><div class="activity"><div class="activity-icon">!</div><div class="activity-main"><strong>Simulation mode enabled</strong><span>Balances and trades are fictional.</span></div></div><div class="activity"><div class="activity-icon">↗</div><div class="activity-main"><strong>Community update</strong><span>New discussion activity is available.</span></div></div></div>` }
+      };
+      const entry = modalMap[type] || modalMap.about;
+      body.innerHTML = `<div class="modal-head"><div><h3>${entry.title}</h3></div>${close}</div>${entry.html}`;
+      document.getElementById('modalOverlay').classList.remove('hidden');
+      document.getElementById('modalClose').addEventListener('click', closeModal);
+      if (type === 'deposit') document.getElementById('confirmDeposit').addEventListener('click', confirmDeposit);
+      if (type === 'withdraw') document.getElementById('confirmWithdraw').addEventListener('click', confirmWithdraw);
+      if (type === 'verification') document.getElementById('verifyProfile').addEventListener('click', completeVerification);
+      if (type === 'settings') {
+        document.getElementById('settingsNotifications').addEventListener('change', e => { state.settings.notifications = e.target.checked; saveState(); });
+        document.getElementById('resetTour').addEventListener('click', () => { state.tourSeen = false; state.tourStep = 0; saveState(); closeModal(); launchTour(); });
+      }
+      if (type === 'referral') document.getElementById('copyInvite').addEventListener('click', async () => { try { await navigator.clipboard.writeText(state.user.inviteCode || 'DEMO-ACCESS'); showToast('Invitation code copied.'); } catch (error) { showToast('Copy is unavailable in this browser.'); } });
+      if (type === 'createPost') document.getElementById('publishPost').addEventListener('click', publishPost);
+    }
+
+    function closeModal() { document.getElementById('modalOverlay').classList.add('hidden'); selectedModal = null; }
+    function confirmDeposit() {
+      const amount = Number(document.getElementById('depositAmount')?.value || 0);
+      if (!Number.isFinite(amount) || amount <= 0) { showToast('Enter a valid simulated deposit amount.'); return; }
+      state.balance += amount;
+      state.transactions.unshift({ id: Date.now(), type:'deposit', label:'Simulated deposit', amount, time:'Just now' });
+      saveState(); closeModal(); render(); showToast(`${money(amount)} added to simulated balance.`);
+    }
+    function confirmWithdraw() {
+      const amount = Number(document.getElementById('withdrawAmount')?.value || 0);
+      if (!Number.isFinite(amount) || amount <= 0 || amount > state.balance) { showToast('Enter a valid amount within your simulated available balance.'); return; }
+      state.balance -= amount;
+      state.transactions.unshift({ id: Date.now(), type:'withdraw', label:'Simulated withdrawal', amount:-amount, time:'Just now' });
+      saveState(); closeModal(); render(); showToast(`${money(amount)} withdrawn from simulated balance.`);
+    }
+    function completeVerification() {
+      state.user.verified = true; saveState(); closeModal(); showToast('Profile verification completed in simulation mode.'); if (!state.tourSeen) launchTour(); render();
+    }
+    function publishPost() {
+      const text = String(document.getElementById('postText')?.value || '').trim();
+      if (!text) { showToast('Write something before publishing.'); return; }
+      state.communityPosts.unshift({ id: Date.now(), author: state.user.name, badge:'Member', text, likes:0, comments:0, liked:false, time:'Just now' });
+      saveState(); closeModal(); render(); showToast('Post published to the simulated community.');
+    }
+
+    const TOUR = [
+      ['Home','This is your dashboard. Track your simulated balance, active cycle, progress and recent activity here.'],
+      ['Quick Actions','Deposit, Withdraw and Trade are available here without filling the navigation with extra tabs.'],
+      ['Trade','Choose a Daily, Weekly, Monthly or Yearly simulation plan and monitor the arbitrage model.'],
+      ['Community','Connect with the private simulated community, post updates, and read announcements.'],
+      ['Profile & Menu','Manage verification, history, referrals, security, support and settings from Profile or the side drawer.']
+    ];
+    function launchTour() { if (state.tourSeen) return; state.tourStep = 0; updateTour(); document.getElementById('tourOverlay').classList.remove('hidden'); }
+    function updateTour() {
+      const [title, text] = TOUR[state.tourStep];
+      document.getElementById('tourStep').textContent = `Tour ${state.tourStep + 1} of ${TOUR.length}`;
+      document.getElementById('tourTitle').textContent = title;
+      document.getElementById('tourText').textContent = text;
+      document.getElementById('tourNext').textContent = state.tourStep === TOUR.length - 1 ? 'Finish' : 'Next';
+    }
+    function nextTour() { if (state.tourStep >= TOUR.length - 1) { state.tourSeen = true; state.tourStep = 0; saveState(); document.getElementById('tourOverlay').classList.add('hidden'); return; } state.tourStep += 1; saveState(); updateTour(); }
+    function skipTour() { state.tourSeen = true; state.tourStep = 0; saveState(); document.getElementById('tourOverlay').classList.add('hidden'); }
+
+    function openDrawer() { document.getElementById('sideDrawer').classList.add('open'); document.getElementById('drawerScrim').classList.remove('hidden'); }
+    function closeDrawer() { document.getElementById('sideDrawer').classList.remove('open'); document.getElementById('drawerScrim').classList.add('hidden'); }
+
+    document.getElementById('showSignupBtn').addEventListener('click', () => { document.getElementById('signinView').classList.add('hidden'); document.getElementById('signupView').classList.remove('hidden'); });
+    document.getElementById('showSigninBtn').addEventListener('click', () => { document.getElementById('signupView').classList.add('hidden'); document.getElementById('signinView').classList.remove('hidden'); });
+    document.getElementById('forgotBtn').addEventListener('click', () => showToast('Prototype reset flow: use a production auth provider for real password recovery.'));
+
+    document.getElementById('signinForm').addEventListener('submit', event => {
+      event.preventDefault();
+      const email = document.getElementById('signinEmail').value.trim();
+      state.loggedIn = true; state.user.email = email || state.user.email; saveState(); currentRoute = 'home'; render();
+    });
+    document.getElementById('signupForm').addEventListener('submit', event => {
+      event.preventDefault();
+      const password = document.getElementById('signupPassword').value;
+      const confirm = document.getElementById('signupConfirm').value;
+      const invite = document.getElementById('inviteCode').value.trim().toUpperCase();
+      if (password !== confirm) { showToast('Passwords do not match.'); return; }
+      if (!VALID_INVITES.has(invite)) { showToast('That invitation code is not valid for this prototype.'); return; }
+      state.loggedIn = true;
+      state.user = { name: document.getElementById('signupName').value.trim(), email: document.getElementById('signupEmail').value.trim(), verified: false, inviteCode: invite };
+      state.balance = 0; state.activeTrade = null; state.tradeHistory = []; state.transactions = []; state.tourSeen = false;
+      saveState(); currentRoute = 'home'; render();
+      openModal('verification');
+    });
+
+    document.querySelectorAll('#bottomNav [data-route]').forEach(btn => btn.addEventListener('click', () => navigate(btn.dataset.route)));
+    document.getElementById('hamburger').addEventListener('click', openDrawer);
+    document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+    document.getElementById('drawerScrim').addEventListener('click', closeDrawer);
+    document.querySelectorAll('.drawer-item[data-route]').forEach(btn => btn.addEventListener('click', () => navigate(btn.dataset.route)));
+    document.querySelectorAll('.drawer-item[data-modal]').forEach(btn => btn.addEventListener('click', () => { closeDrawer(); openModal(btn.dataset.modal); }));
+    document.getElementById('drawerLogout').addEventListener('click', () => { state.loggedIn = false; saveState(); closeDrawer(); render(); });
+    document.getElementById('notificationsBtn').addEventListener('click', () => openModal('notifications'));
+    document.getElementById('tourNext').addEventListener('click', nextTour);
+    document.getElementById('tourSkip').addEventListener('click', skipTour);
+    document.getElementById('modalOverlay').addEventListener('click', event => { if (event.target.id === 'modalOverlay') closeModal(); });
+
+    function bootstrap() {
+      if (state.loggedIn) render();
+      else {
+        document.getElementById('authScreen').classList.remove('hidden');
+        document.getElementById('appScreen').classList.add('hidden');
+      }
+    }
+    bootstrap();
+  </script>
+</body>
+</html>
