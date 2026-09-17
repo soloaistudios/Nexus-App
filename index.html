@@ -1,0 +1,994 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/><meta content="#4F46E5" name="theme-color"/><meta content="NEXUS &mdash; private arbitrage trading simulator" name="description"/><link href="manifest.json" rel="manifest"/><link href="app.css" rel="stylesheet"/><title>NEXUS &mdash; Arbitrage Trading</title></head><body>
+
+<div class="auth-shell" id="authScreen">
+<div class="auth-glow"></div>
+<section class="auth-card">
+<div class="brand-lockup">
+<div class="brand-mark">N</div>
+<div>
+<div class="brand-name">NEXUS</div>
+<div class="brand-sub">Private Arbitrage Trading</div>
+</div>
+</div>
+
+<div class="form-error hidden" id="authError"></div>
+
+<div id="signinView">
+<h1>Welcome back</h1>
+<p class="muted">Sign in to your private NEXUS account.</p>
+<form id="signinForm">
+<label>Email<input autocomplete="email" class="input" id="signinEmail" placeholder="you@example.com" required="" type="email"/></label>
+<label>Password<input autocomplete="current-password" class="input" id="signinPassword" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" required="" type="password"/></label>
+<button class="link-btn right" id="forgotBtn" type="button">Forgot password?</button>
+<button class="primary wide" type="submit">Sign In</button>
+</form>
+<p class="switch">New to NEXUS? <button class="link-btn" id="showSignupBtn" type="button">Create account</button></p>
+</div>
+
+<div class="hidden" id="signupView">
+<h1>Create account</h1>
+<p class="muted">Private access requires an invitation code.</p>
+<form id="signupForm">
+<label>Full name<input class="input" id="signupName" placeholder="Your full name" required=""/></label>
+<label>Email<input autocomplete="email" class="input" id="signupEmail" placeholder="you@example.com" required="" type="email"/></label>
+<label>Password<input class="input" id="signupPassword" minlength="8" placeholder="At least 8 characters" required="" type="password"/></label>
+<label>Confirm password<input class="input" id="signupConfirm" minlength="8" placeholder="Repeat password" required="" type="password"/></label>
+<label>Invitation code<input autocomplete="off" class="input" id="inviteCode" placeholder="NEXUS-7F3K" required=""/></label>
+<label class="check"><input id="termsCheck" required="" type="checkbox"/><span>I understand that this is a private trading workspace.</span></label>
+<button class="primary wide" type="submit">Create Account</button>
+</form>
+<p class="switch">Already registered? <button class="link-btn" id="showSigninBtn" type="button">Sign in</button></p>
+</div>
+</section>
+</div>
+
+<div class="hidden" id="appScreen">
+
+<div class="topbar">
+<button aria-label="Open menu" class="icon-btn" id="drawerOpen">☰</button>
+<div class="top-brand">
+<div class="mini-mark">N</div>
+<div>
+<strong>NEXUS</strong>
+<small>Arbitrage</small>
+</div>
+</div>
+<div class="top-user">
+<span data-header-status="">Verified</span>
+<button class="avatar" data-header-name="" data-route="profile">T</button>
+</div>
+</div>
+
+<main class="app-main">
+
+<section class="page" data-page="home">
+
+<div class="page-head">
+<div>
+<span class="eyebrow">Overview</span>
+<h2>Good to see you</h2>
+<p class="muted">Your private trading workspace.</p>
+</div>
+</div>
+
+<div class="balance-card">
+<div>
+<span class="label">Total balance</span>
+
+<div class="balance" data-balance="">$0.00</div>
+
+<span class="caption">
+Available
+<b data-available="">$0.00</b>
+</span>
+
+<span class="caption">
+Locked
+<b data-locked="">$0.00</b>
+</span>
+</div>
+
+<div class="quick-actions" data-tour="quick-actions">
+
+<button data-action="deposit">
+<span>＋</span>
+Deposit
+</button>
+
+<button data-action="withdraw">
+<span>&nearrow;</span>
+Withdraw
+</button>
+
+<button data-action="trade">
+<span>◈</span>
+Trade
+</button>
+
+</div>
+</div>
+
+<div class="grid2">
+
+<div class="panel">
+
+<div class="panel-head">
+<h3>Active trade</h3>
+<span class="live-dot" data-trade-status="">Ready</span>
+</div>
+
+<div class="trade-big">
+
+<div>
+<small>Plan</small>
+<strong data-trade-plan="">Daily</strong>
+</div>
+
+<div>
+<small>Target ROI</small>
+<strong data-trade-roi="">25%</strong>
+</div>
+
+</div>
+
+<div class="countdown" data-trade-countdown="">No active cycle</div>
+
+<div class="progress">
+<i data-trade-progress=""></i>
+</div>
+
+<div class="split">
+
+<span>
+Investment
+<b data-trade-investment="">$0.00</b>
+</span>
+
+<span>
+Profit
+<b data-trade-profit="">$0.00</b>
+</span>
+
+</div>
+
+<p class="activity-line" data-trade-last-event="">
+Ready to start a trading cycle.
+</p>
+
+</div>
+
+<div class="panel">
+
+<div class="panel-head">
+<h3>Market pulse</h3>
+<span class="muted">Market pulse</span>
+</div>
+
+<div class="market-grid">
+
+<div>
+<small>BTC/USDT</small>
+<strong data-market-price="BTC">$0.00</strong>
+</div>
+
+<div>
+<small>ETH/USDT</small>
+<strong data-market-price="ETH">$0.00</strong>
+</div>
+
+<div>
+<small>SOL/USDT</small>
+<strong data-market-price="SOL">$0.00</strong>
+</div>
+
+<div>
+<small>USDC/USDT</small>
+<strong data-market-price="USDC">$0.00</strong>
+</div>
+
+</div>
+</div>
+</div>
+
+<div class="panel">
+
+<div class="panel-head">
+<h3>Recent trades</h3>
+<button class="link-btn" data-modal="tradeHistory">View all</button>
+</div>
+
+<div data-trade-history=""></div>
+
+</div>
+
+</section>
+
+<section class="page hidden" data-page="trade">
+
+<div class="page-head">
+<div>
+<span class="eyebrow">Trading</span>
+<h2>Choose a plan</h2>
+<p class="muted">Start a private arbitrage trading cycle.</p>
+</div>
+</div>
+
+<div class="plan-grid">
+
+<button class="plan-card selected" data-plan-card="daily">
+<span>Daily</span>
+<b>25%</b>
+<small>24 hours</small>
+</button>
+
+<button class="plan-card" data-plan-card="weekly">
+<span>Weekly</span>
+<b>100%</b>
+<small>7 days</small>
+</button>
+
+<button class="plan-card" data-plan-card="monthly">
+<span>Monthly</span>
+<b>300%</b>
+<small>30 days</small>
+</button>
+
+<button class="plan-card" data-plan-card="yearly">
+<span>Yearly</span>
+<b>500%</b>
+<small>365 days</small>
+</button>
+
+</div>
+
+<div class="panel trade-form">
+
+<div class="panel-head">
+<div>
+<h3>Start trade</h3>
+<p class="muted">Your cycle runs using the selected plan settings.</p>
+</div>
+<span class="status-pill">Private</span>
+</div>
+
+<label>
+Plan
+<select class="input" data-plan-select="">
+<option value="daily">Daily &middot; 25%</option>
+<option value="weekly">Weekly &middot; 100%</option>
+<option value="monthly">Monthly &middot; 300%</option>
+<option value="yearly">Yearly &middot; 500%</option>
+</select>
+</label>
+
+<label>
+Amount
+<input class="input" data-trade-amount="" min="1" placeholder="2000.00" step="0.01" type="number"/>
+</label>
+
+<div class="estimate">
+
+<div>
+<span>Target ROI</span>
+<b data-plan-roi-preview="">25%</b>
+</div>
+
+<div>
+<span>Duration</span>
+<b data-plan-duration-preview="">1 day</b>
+</div>
+
+</div>
+
+<button class="primary wide" data-start-trade="">
+Start trading cycle
+</button>
+
+<p class="micro">
+Displayed returns are predefined demo-plan targets and are not live-market guarantees.
+</p>
+
+</div>
+
+<div class="grid2">
+
+<div class="panel">
+
+<div class="panel-head">
+<h3>Arbitrage activity</h3>
+<span class="live-dot">Live</span>
+</div>
+
+<div class="activity-feed" data-trading-activity="">
+<div class="empty-state">
+Trading activity will appear when a cycle is active.
+</div>
+</div>
+
+</div>
+
+<div class="panel">
+
+<div class="panel-head">
+<h3>Current cycle</h3>
+<span data-trade-id="">&mdash;</span>
+</div>
+
+<div class="cycle-details">
+
+<div>
+<span>Status</span>
+<b data-trade-status="">Ready</b>
+</div>
+
+<div>
+<span>Last event</span>
+<b data-trade-last-event="">&mdash;</b>
+</div>
+
+<div>
+<span>Investment</span>
+<b data-trade-investment="">$0.00</b>
+</div>
+
+<div>
+<span>Profit</span>
+<b data-trade-profit="">$0.00</b>
+</div>
+
+</div>
+</div>
+</div>
+
+</section>
+
+<section class="page hidden" data-page="community">
+
+<div class="page-head">
+<div>
+<span class="eyebrow">Private community</span>
+<h2>Community</h2>
+<p class="muted">Updates and conversations from members.</p>
+</div>
+</div>
+
+<div class="panel composer">
+<form data-community-post-form="">
+<textarea data-community-post-input="" maxlength="1000" placeholder="Share something with the community&hellip;" rows="3"></textarea>
+<div class="composer-foot">
+<span class="micro">Keep posts respectful and relevant.</span>
+<button class="primary" type="submit">Post</button>
+</div>
+</form>
+</div>
+
+<div class="community-feed" data-community-feed=""></div>
+
+</section>
+
+<section class="page hidden" data-page="profile">
+
+<div class="page-head">
+<div>
+<span class="eyebrow">Account</span>
+<h2>Profile</h2>
+<p class="muted">Manage your private account.</p>
+</div>
+
+<button class="secondary" data-open-edit-profile="">
+Edit profile
+</button>
+
+</div>
+
+<div class="profile-hero panel">
+
+<div class="profile-avatar" data-profile-avatar="">
+T
+</div>
+
+<div>
+<h3 data-profile-name="">Trader Account</h3>
+<p data-profile-email="">demo@nexus.local</p>
+<span class="verified-badge" data-profile-verification="">
+Not verified
+</span>
+</div>
+
+</div>
+
+<div class="stats-grid">
+
+<div class="stat panel">
+<small>Balance</small>
+<b data-profile-balance="">$0.00</b>
+</div>
+
+<div class="stat panel">
+<small>Completed cycles</small>
+<b data-profile-cycles="">0</b>
+</div>
+
+<div class="stat panel">
+<small>Simulated profit</small>
+<b data-profile-profit="">$0.00</b>
+</div>
+
+</div>
+
+<div class="panel list-panel">
+
+<button class="drawer-link" data-open-verification="">
+<span>&checkmark;</span>
+<div>
+<b>Profile verification</b>
+<small>
+Verification status &middot;
+<span data-profile-verification="">Not verified</span>
+</small>
+</div>
+<strong>&rsaquo;</strong>
+</button>
+
+<div class="divider"></div>
+
+<div class="referral">
+
+<div>
+<small>Invitation code</small>
+<b data-profile-invite="">&mdash;</b>
+</div>
+
+<button class="secondary small" data-copy-target="profileInviteProxy">
+Copy
+</button>
+
+</div>
+
+<span class="hidden" id="profileInviteProxy">NEXUS-INVITE</span>
+
+</div>
+
+<div class="panel list-panel">
+
+<button class="drawer-link" data-modal="transactionHistory">
+<span>&apid;</span>
+<div>
+<b>Transaction history</b>
+<small>Deposits, withdrawals and trade records</small>
+</div>
+<strong>&rsaquo;</strong>
+</button>
+
+<div class="divider"></div>
+
+<button class="drawer-link" data-modal="security">
+<span>⌘</span>
+<div>
+<b>Security</b>
+<small>Password and account security</small>
+</div>
+<strong>&rsaquo;</strong>
+</button>
+
+<div class="divider"></div>
+
+<button class="drawer-link" data-replay-tour="">
+<span>?</span>
+<div>
+<b>Guided tour</b>
+<small>Review how NEXUS works</small>
+</div>
+<strong>&rsaquo;</strong>
+</button>
+
+<div class="divider"></div>
+
+<button class="drawer-link danger" data-sign-out="">
+<span>&rarrhk;</span>
+<div>
+<b>Sign out</b>
+<small>End this browser session</small>
+</div>
+<strong>&rsaquo;</strong>
+</button>
+
+</div>
+
+<div class="panel list-panel">
+<h3>Recent transactions</h3>
+<div data-profile-transactions=""></div>
+</div>
+
+</section>
+
+</main>
+
+<nav class="bottom-nav">
+
+<button data-route="home" data-tour="home">
+⌂
+<span>Home</span>
+</button>
+
+<button data-route="trade" data-tour="trade">
+◈
+<span>Trade</span>
+</button>
+
+<button data-route="community" data-tour="community">
+◎
+<span>Community</span>
+</button>
+
+<button data-route="profile" data-tour="profile">
+◉
+<span>Profile</span>
+</button>
+
+</nav>
+
+</div>
+
+<div class="drawer" id="sideDrawer">
+
+<div class="drawer-backdrop"></div>
+
+<aside class="drawer-panel">
+
+<div class="drawer-head">
+
+<div class="top-brand">
+<div class="mini-mark">N</div>
+<div>
+<strong>NEXUS</strong>
+<small>Private ecosystem</small>
+</div>
+</div>
+
+<button class="icon-btn" id="drawerClose">&times;</button>
+
+</div>
+
+<div class="drawer-group">
+
+<small>Account</small>
+
+<button data-route="profile">◉ Profile</button>
+<button data-open-verification="">&checkmark; Verification</button>
+<button data-modal="security">⌘ Security</button>
+
+</div>
+
+<div class="drawer-group">
+
+<small>Trading</small>
+
+<button data-modal="tradeHistory">&nearrow; Trade history</button>
+<button data-modal="transactionHistory">&apid; Transaction history</button>
+
+</div>
+
+<div class="drawer-group">
+
+<small>Community</small>
+
+<button data-route="community">◎ Community</button>
+<button data-modal="announcements">! Announcements</button>
+
+</div>
+
+<div class="drawer-group">
+
+<small>Support</small>
+
+<button data-modal="support">? Help &amp; support</button>
+<button data-modal="settings">⚙ Settings</button>
+
+</div>
+
+</aside>
+
+</div>
+
+<div id="modalRoot">
+
+<div class="modal hidden" data-modal-panel="deposit">
+
+<div class="modal-card">
+
+<div class="modal-head">
+
+<div>
+<span class="eyebrow">Quick action</span>
+<h3>Deposit funds</h3>
+</div>
+
+<button class="icon-btn" data-close-modal="deposit">&times;</button>
+
+</div>
+
+<p class="muted">
+Use the fictional destination below to add funds to your demo balance.
+</p>
+
+<div class="wallet">
+
+<span>USDT &middot; Demo Network</span>
+
+<strong id="depositAddress">
+0xNEXUS-DEMO-7A41-2B93
+</strong>
+
+<button class="secondary small" data-copy-target="depositAddress">
+Copy address
+</button>
+
+</div>
+
+<form data-deposit-form="">
+
+<label>
+Amount
+<input class="input" min="1" placeholder="2000.00" required="" step="0.01" type="number"/>
+</label>
+
+<button class="primary wide">
+Add demo funds
+</button>
+
+</form>
+
+<p class="micro">
+No real cryptocurrency is sent or received.
+</p>
+
+</div>
+</div>
+
+<div class="modal hidden" data-modal-panel="withdraw">
+
+<div class="modal-card">
+
+<div class="modal-head">
+
+<div>
+<span class="eyebrow">Quick action</span>
+<h3>Withdraw funds</h3>
+</div>
+
+<button class="icon-btn" data-close-modal="withdraw">&times;</button>
+
+</div>
+
+<p class="muted">
+Enter a fictional destination address for this demo withdrawal.
+</p>
+
+<form data-withdraw-form="">
+
+<label>
+Withdrawal address
+<input class="input" name="address" placeholder="Demo wallet address" required=""/>
+</label>
+
+<label>
+Amount
+<input class="input" min="1" name="amount" placeholder="500.00" required="" step="0.01" type="number"/>
+</label>
+
+<button class="primary wide">
+Record demo withdrawal
+</button>
+
+</form>
+
+<p class="micro">
+No real cryptocurrency is transferred.
+</p>
+
+</div>
+</div>
+
+<div class="modal hidden" data-modal-panel="security">
+
+<div class="modal-card">
+
+<div class="modal-head">
+
+<h3>Security</h3>
+
+<button class="icon-btn" data-close-modal="security">
+&times;
+</button>
+
+</div>
+
+<div class="security-list">
+
+<div>
+<b>Password</b>
+<span>Password management is not connected in this prototype.</span>
+</div>
+
+<div>
+<b>Session</b>
+<span>Your demo session is stored locally in this browser.</span>
+</div>
+
+<div>
+<b>2FA</b>
+<span>Two-factor authentication is not connected.</span>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<div class="modal hidden" data-modal-panel="tradeHistory">
+
+<div class="modal-card">
+
+<div class="modal-head">
+
+<h3>Trade history</h3>
+
+<button class="icon-btn" data-close-modal="tradeHistory">
+&times;
+</button>
+
+</div>
+
+<div data-trade-history=""></div>
+
+</div>
+</div>
+
+<div class="modal hidden" data-modal-panel="transactionHistory">
+
+<div class="modal-card">
+
+<div class="modal-head">
+
+<h3>Transaction history</h3>
+
+<button class="icon-btn" data-close-modal="transactionHistory">
+&times;
+</button>
+
+</div>
+
+<div data-profile-transactions=""></div>
+
+</div>
+</div>
+
+<div class="modal hidden" data-modal-panel="announcements">
+
+<div class="modal-card">
+
+<div class="modal-head">
+
+<h3>Announcements</h3>
+
+<button class="icon-btn" data-close-modal="announcements">
+&times;
+</button>
+
+</div>
+
+<div class="announcement">
+
+<b>Private community is live</b>
+
+<p>
+Use the Community tab for updates and member discussions.
+</p>
+
+</div>
+
+<div class="announcement">
+
+<b>Trading simulator updated</b>
+
+<p>
+Plan selection and cycle tracking are now unified.
+</p>
+
+</div>
+
+</div>
+</div>
+
+<div class="modal hidden" data-modal-panel="support">
+
+<div class="modal-card">
+
+<div class="modal-head">
+
+<h3>Help &amp; support</h3>
+
+<button class="icon-btn" data-close-modal="support">
+&times;
+</button>
+
+</div>
+
+<div class="announcement">
+
+<b>Need help?</b>
+
+<p>
+This browser-only demo does not connect to a support backend. Use the guided tour or review the account settings.
+</p>
+
+</div>
+
+</div>
+</div>
+
+<div class="modal hidden" data-modal-panel="settings">
+
+<div class="modal-card">
+
+<div class="modal-head">
+
+<h3>Settings</h3>
+
+<button class="icon-btn" data-close-modal="settings">
+&times;
+</button>
+
+</div>
+
+<label class="setting">
+
+<span>Notifications</span>
+
+<input checked="" id="notificationsToggle" type="checkbox"/>
+
+</label>
+
+<p class="micro">
+Preferences are stored locally for the demo.
+</p>
+
+</div>
+</div>
+
+<div class="modal hidden" data-modal-panel="editProfile">
+
+<div class="modal-card">
+
+<div class="modal-head">
+
+<h3>Edit profile</h3>
+
+<button class="icon-btn" data-close-modal="editProfile">
+&times;
+</button>
+
+</div>
+
+<form data-edit-profile-form="">
+
+<label>
+Display name
+<input class="input" maxlength="80" required="" value="Trader Account"/>
+</label>
+
+<button class="primary wide">
+Save changes
+</button>
+
+</form>
+
+</div>
+</div>
+
+</div>
+
+<div class="modal hidden" id="verificationModal">
+
+<div class="modal-card">
+
+<div class="modal-head">
+
+<div>
+<span class="eyebrow">Welcome</span>
+<h3>Complete your profile</h3>
+</div>
+
+<button class="icon-btn" id="verificationClose">
+&times;
+</button>
+
+</div>
+
+<p class="muted">
+A quick verification step keeps your onboarding organized.
+</p>
+
+<form>
+
+<label>
+Full name
+<input class="input" id="verificationName" required=""/>
+</label>
+
+<label>
+Country
+<select class="input" id="verificationCountry" required="">
+<option value="">Select country</option>
+<option>Nigeria</option>
+<option>United Kingdom</option>
+<option>United States</option>
+<option>Ghana</option>
+<option>Other</option>
+</select>
+</label>
+
+<label class="check">
+<input id="verificationTerms" required="" type="checkbox"/>
+<span>I understand this is a demo profile verification.</span>
+</label>
+
+<button class="primary wide" id="startVerificationBtn">
+Complete verification
+</button>
+
+<button class="secondary wide" id="skipVerificationBtn" type="button">
+Skip for now
+</button>
+
+</form>
+
+</div>
+</div>
+
+<div class="tour-backdrop hidden" id="tourBackdrop"></div>
+
+<div class="tour-modal hidden" id="tourModal">
+
+<div class="tour-progress">
+<i id="tourProgress"></i>
+</div>
+
+<small id="tourStep">1 of 5</small>
+
+<h3 id="tourTitle">Home</h3>
+
+<p id="tourText">See your dashboard.</p>
+
+<div class="tour-actions">
+
+<button class="link-btn" id="tourSkip">
+Skip
+</button>
+
+<span></span>
+
+<button class="secondary" id="tourBack">
+Back
+</button>
+
+<button class="primary" id="tourNext">
+Next
+</button>
+
+</div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script defer="" src="storage.js"></script>
+<script defer="" src="auth.js"></script>
+<script defer="" src="onboarding.js"></script>
+<script defer="" src="trading.js"></script>
+<script defer="" src="simulation.js"></script>
+<script defer="" src="community.js"></script>
+<script defer="" src="profile.js"></script>
+<script defer="" src="app.js"></script>
+
+</body></html>
